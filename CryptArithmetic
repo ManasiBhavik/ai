@@ -1,0 +1,95 @@
+import java.util.*;
+
+public class CryptarithmeticSolver {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the first word (s1): ");
+        String s1 = scanner.next();
+
+        System.out.print("Enter the second word (s2): ");
+        String s2 = scanner.next();
+
+        System.out.print("Enter the third word (s3): ");
+        String s3 = scanner.next();
+
+        if (solveCryptarithmetic(s1, s2, s3)) {
+            System.out.println("Solution found!");
+        } else {
+            System.out.println("No solution exists.");
+        }
+    }
+
+    public static boolean solveCryptarithmetic(String s1, String s2, String s3) {
+        Set<Character> charSet = new HashSet<>();
+        for (char c : s1.toCharArray()) {
+            charSet.add(c);
+        }
+        for (char c : s2.toCharArray()) {
+            charSet.add(c);
+        }
+        for (char c : s3.toCharArray()) {
+            charSet.add(c);
+        }
+
+        if (charSet.size() > 10) {
+            return false;
+        }
+
+        List<Character> charList = new ArrayList<>(charSet);
+        Map<Character, Integer> charToDigit = new HashMap<>();
+        Set<Integer> usedDigits = new HashSet<>();
+
+        if (solveCryptarithmeticHelper(s1, s2, s3, charList, 0, charToDigit, usedDigits)) {
+            // Print the character to digit mapping
+            for (Map.Entry<Character, Integer> entry : charToDigit.entrySet()) {
+                System.out.println(entry.getKey() + "=" + entry.getValue());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean solveCryptarithmeticHelper(String s1, String s2, String s3,
+                                                     List<Character> charList, int index,
+                                                     Map<Character, Integer> charToDigit,
+                                                     Set<Integer> usedDigits) {
+
+        if (index == charList.size()) {
+            int num1 = convertToNumber(s1, charToDigit);
+            int num2 = convertToNumber(s2, charToDigit);
+            int num3 = convertToNumber(s3, charToDigit);
+
+            return num1 + num2 == num3;
+        }
+
+        char currentChar = charList.get(index);
+        for (int digit = 0; digit <= 9; digit++) {
+            // Check if the digit is already used or if it violates the leading zero constraint
+            if (!usedDigits.contains(digit) &&
+                    !(digit == 0 && (currentChar == s1.charAt(0) || currentChar == s2.charAt(0) || currentChar == s3.charAt(0)))) {
+
+                charToDigit.put(currentChar, digit);
+                usedDigits.add(digit);
+
+                if (solveCryptarithmeticHelper(s1, s2, s3, charList, index + 1, charToDigit, usedDigits)) {
+                    return true;
+                }
+
+                charToDigit.remove(currentChar);
+                usedDigits.remove(digit);
+            }
+        }
+        return false;
+    }
+
+    public static int convertToNumber(String s, Map<Character, Integer> charToDigit) {
+        int number = 0;
+        for (char c : s.toCharArray()) {
+            number = number * 10 + charToDigit.get(c);
+        }
+        return number;
+    }
+}
